@@ -11,9 +11,10 @@ import org.modelmapper.ModelMapper;
 import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.lang.reflect.Type;
 import java.util.List;
+import static br.edu.ulbra.election.party.util.ValidatePartyInput.validateInput;
+import static br.edu.ulbra.election.party.util.ValidatePartyInput.validatePartyName;
 
 @Service
 public class PartyService {
@@ -38,6 +39,7 @@ public class PartyService {
 
     public PartyOutput create(PartyInput partyInput) {
         validateInput(partyInput, false);
+        validatePartyName(partyInput);
         Party party = modelMapper.map(partyInput, Party.class);
         party = partyRepository.save(party);
         return modelMapper.map(party, PartyOutput.class);
@@ -61,7 +63,6 @@ public class PartyService {
             throw new GenericOutputException(MESSAGE_INVALID_ID);
         }
         validateInput(partyInput, true);
-
         Party party = partyRepository.findById(partyId).orElse(null);
         if (party == null){
             throw new GenericOutputException(MESSAGE_PARTY_NOT_FOUND);
@@ -89,20 +90,6 @@ public class PartyService {
 
         return new GenericOutput("Party deleted");
     }
-
-    private void validateInput(PartyInput partyInput, boolean isUpdate){
-
-        if (StringUtils.isBlank(partyInput.getName())){
-            throw new GenericOutputException("Invalid name");
-        }
-        if (StringUtils.isBlank(partyInput.getCode())){
-            throw new GenericOutputException("Invalid code");
-        }
-        if (partyInput.getNumber() == null){
-            throw new GenericOutputException("Invalid number");
-        }
-    }
-
 }
 
 

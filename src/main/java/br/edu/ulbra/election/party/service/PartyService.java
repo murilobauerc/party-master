@@ -15,6 +15,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import static br.edu.ulbra.election.party.util.ValidatePartyInput.validateInput;
 import static br.edu.ulbra.election.party.util.ValidatePartyInput.validatePartyName;
+import static br.edu.ulbra.election.party.util.ValidatePartyInput.validatePartyNumber;
 
 @Service
 public class PartyService {
@@ -40,6 +41,7 @@ public class PartyService {
     public PartyOutput create(PartyInput partyInput) {
         validateInput(partyInput, false);
         validatePartyName(partyInput);
+        validatePartyNumber(partyInput);
         Party party = modelMapper.map(partyInput, Party.class);
         party = partyRepository.save(party);
         return modelMapper.map(party, PartyOutput.class);
@@ -63,6 +65,8 @@ public class PartyService {
             throw new GenericOutputException(MESSAGE_INVALID_ID);
         }
         validateInput(partyInput, true);
+        validatePartyName(partyInput);
+        validatePartyNumber(partyInput);
         Party party = partyRepository.findById(partyId).orElse(null);
         if (party == null){
             throw new GenericOutputException(MESSAGE_PARTY_NOT_FOUND);

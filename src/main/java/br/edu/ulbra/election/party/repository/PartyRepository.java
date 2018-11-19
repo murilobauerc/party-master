@@ -5,6 +5,7 @@ import org.springframework.data.repository.CrudRepository;
 
 public interface PartyRepository extends CrudRepository<Party, Long> {
     Party findByCode(String code);
+    Party findByNumber(Integer number);
 }
 
 

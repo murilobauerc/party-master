@@ -6,16 +6,14 @@ import br.edu.ulbra.election.party.model.Party;
 import br.edu.ulbra.election.party.output.v1.GenericOutput;
 import br.edu.ulbra.election.party.output.v1.PartyOutput;
 import br.edu.ulbra.election.party.repository.PartyRepository;
-import org.apache.commons.lang.StringUtils;
 import org.modelmapper.ModelMapper;
-import org.modelmapper.TypeToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import java.lang.reflect.Type;
+
 import java.util.List;
-import static br.edu.ulbra.election.party.util.ValidatePartyInput.validateInput;
-import static br.edu.ulbra.election.party.util.ValidatePartyInput.validatePartyName;
-import static br.edu.ulbra.election.party.util.ValidatePartyInput.validatePartyNumber;
+import java.util.stream.Collectors;
+
+import static br.edu.ulbra.election.party.util.ValidatePartyInput.*;
 
 @Service
 public class PartyService {
@@ -34,17 +32,19 @@ public class PartyService {
     }
 
     public List<PartyOutput> getAll(){
-        Type partyOutputListType = new TypeToken<List<PartyOutput>>(){}.getType();
-        return modelMapper.map(partyRepository.findAll(), partyOutputListType);
+        List<Party> partyList = (List<Party>)partyRepository.findAll();
+        return partyList.stream().map(Party::toPartyOutput).collect(Collectors.toList());
     }
 
     public PartyOutput create(PartyInput partyInput) {
         validateInput(partyInput, false);
         validatePartyName(partyInput);
         validatePartyNumber(partyInput);
+        validateSamePartyCode(partyInput, null);
+        validateSamePartyNumber(partyInput, null);
         Party party = modelMapper.map(partyInput, Party.class);
         party = partyRepository.save(party);
-        return modelMapper.map(party, PartyOutput.class);
+        return Party.toPartyOutput(party);
     }
 
     public PartyOutput getById(Long partyId){
@@ -67,6 +67,10 @@ public class PartyService {
         validateInput(partyInput, true);
         validatePartyName(partyInput);
         validatePartyNumber(partyInput);
+        validateSamePartyCode(partyInput, partyId);
+        validateSamePartyNumber(partyInput, partyId);
+
+
         Party party = partyRepository.findById(partyId).orElse(null);
         if (party == null){
             throw new GenericOutputException(MESSAGE_PARTY_NOT_FOUND);
